@@ -4,6 +4,7 @@ defmodule Cage.Stack do
       Module.register_attribute __MODULE__, :__stack__
 
       def run(conn, state // nil), do: Cage.Stack.run(conn, state, __MODULE__)
+      defoverridable run: 1, run: 2
     end
   end
 
