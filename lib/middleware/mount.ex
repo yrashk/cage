@@ -12,7 +12,7 @@ defmodule Cage.Middleware.Mount do
           end
         {false, {^path, conn}} ->
           redirect(conn, state, opts)
-        {_, conn} ->
+        {_, {_path, conn}} ->
           {conn, state}
     end
   end
