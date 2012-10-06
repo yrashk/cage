@@ -1,4 +1,4 @@
-defrecord Cage.State, dict: [] do
+defrecord Cage.State, stack: nil, dict: [] do
   def put(k, v, rec) do
     dict(Keyword.put(dict(rec), k, v), rec)
   end

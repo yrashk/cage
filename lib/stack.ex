@@ -11,7 +11,7 @@ defmodule Cage.Stack do
   defexception StopExecution, message: nil, conn: nil, state: nil
 
   def run(conn, state, module) do
-    state = state || Cage.State.new
+    state = state || Cage.State.new(stack: module)
     units = lc {:__stack__, [unit]} inlist module.__info__(:attributes), do: unit
     run_units(conn, state, units)
   end
