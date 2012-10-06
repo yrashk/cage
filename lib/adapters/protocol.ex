@@ -19,6 +19,7 @@ defmodule Cage.HTTP.Protocol do
       def query_string(http, query_string)
       def query_string_params(http)
       def query_string_params(http, query_string_params)
+      def query_params(http)
       def fragment(http)
       def fragment(http, fragment)
       def url(http)

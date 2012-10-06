@@ -28,8 +28,13 @@ defrecord Cage.HTTP.Cowboy, req: nil, subst: [] do
     quote do
       def unquote(key).(Cage.HTTP.Cowboy[req: req] = t) do
         unless_substituted(unquote(key), t) do
-          {value, req} = :cowboy_req.unquote(as)(req)
-          {value, Cage.HTTP.Cowboy.req(req, t)}
+          case :cowboy_req.unquote(as)(req) do
+            {value, req} ->
+              {value, Cage.HTTP.Cowboy.req(req, t)}
+            {:ok, value, req} ->
+              {:ok, value, Cage.HTTP.Cowboy.req(req, t)}
+            other -> other
+          end
         end
       end
 
@@ -74,6 +79,7 @@ defmodule Cage.HTTP.Cowboy.Implementation do
       accessor :peer_addr
       accessor :query_string, as: :qs
       accessor :query_string_params, as: :qs_vals
+      accessor :body_params, as: :body_qs
       accessor :fragment
       accessor :url
       accessor :host_url
