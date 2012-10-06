@@ -9,6 +9,7 @@ defmodule Cage.Stack do
   end
 
   defexception StopExecution, message: nil, conn: nil, state: nil
+  defexception HaltExecution, message: nil, conn: nil, state: nil, reason: nil
 
   def run(conn, state, module) do
     state = state || Cage.State.new(stack: module)

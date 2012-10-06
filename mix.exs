@@ -22,6 +22,9 @@ defmodule Cage.Mixfile do
    [
     { :ranch, %r(.*), github: "extend/ranch"},
     { :cowboy, %r(.*), github: "extend/cowboy"},  
+    { :hackney, %r(.*), github: "benoitc/hackney"},
+      { :mimetypes, %r(.*), github: "spawngrid/mimetypes"},
+      { :edown, %r(.*), github: "esl/edown"},
    ]
   end
 end

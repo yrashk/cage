@@ -4,7 +4,7 @@ defmodule Cage.Middleware do
         alias Cage.HTTP, as: HTTP
         alias Cage.State, as: State
 
-        import Cage.Middleware, only: [stop: 2]
+        import Cage.Middleware, only: [stop: 2, halt: 3]
 
         defmacro __using__(opts), do: Cage.Middleware.using(__MODULE__, opts)
     end
@@ -18,6 +18,10 @@ defmodule Cage.Middleware do
 
   def stop(conn, state) do
     raise Cage.Stack.StopExecution.new(conn: conn, state: state)
+  end
+
+  def halt(reason, conn, state) do
+    raise Cage.Stack.HaltExecution.new(conn: conn, state: state, reason: reason)
   end
 
 end
