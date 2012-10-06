@@ -45,6 +45,8 @@ defmodule Cage.HTTP.Protocol do
       def chunk(http, data)
 
       def response_header(http, name, value)
+
+      def handles_websocket?(http)
     end
   end
 end

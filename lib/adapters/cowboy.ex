@@ -53,15 +53,69 @@ defrecord Cage.HTTP.Cowboy, req: nil, subst: [] do
 end
 
 defmodule Cage.HTTP.Cowboy.Handler do
-  def init(_, req, opts), do: {:ok, req, opts}
+  alias :cowboy_req, as: R
+  def init(_, req, opts) do
+    {headers, req} = R.headers(req)
+    case List.keyfind(headers, "upgrade", 0) do
+      nil -> {:ok, req, opts}
+      {"upgrade", "websocket"} -> 
+        {:upgrade, :protocol, :cowboy_websocket}
+      {"upgrade", "WebSocket"} -> 
+        {:upgrade, :protocol, :cowboy_websocket}
+    end
+  end
 
   def handle(req, opts) do
-    {conn, _state} = opts[:stack].run(Cage.HTTP.Cowboy.new(req))
-    req = Cage.HTTP.Cowboy.req(conn)
+    {conn, _state} = run(req, opts)
+    req = Cage.HTTP.Cowboy.req(conn) 
     {:ok, req, opts}
   end
 
+  def websocket_init(_, req, opts) do
+    {conn, state} = run(req, opts)
+    req = Cage.HTTP.Cowboy.req(conn) 
+    if (handler = Cage.State.get(Cage.Middleware.WebSocket, state)) do
+      case handler.init(conn) do
+        {:ok, state} ->
+          {:ok, req, {handler, state}}
+        _ ->
+          {:shutdown, req}
+      end
+    else
+      {:shutdown, req}
+    end
+  end
+
+  def websocket_handle({:text, message}, req, {handler, state}) do
+    websocket_action(handler.handle_text(message, state), req, handler, state)
+  end
+  def websocket_handle(message, req, {handler, state}) do
+    websocket_action(handler.handle_binary(message, state), req, handler, state)
+  end
+
+  def websocket_info(info, req, {handler, state}) do
+    websocket_action(handler.handle_info(info, state), req, handler, state)
+  end
+
+  def websocket_terminate(reason, _req, {handler, state}) do
+    handler.terminate(reason, state)
+  end
+
+  defp websocket_action({:reply, {:text, response}, state}, req, handler, state) do
+        {:reply, {:text, response}, req, {handler, state}}
+  end
+  defp websocket_action({:reply, response, state}, req, handler, state) do
+        {:reply, response, req, state, {handler, state}}
+  end
+  defp websocket_action({:ok, state}, req, handler, state) do
+        {:ok, req, {handler, state}}
+  end
+
   def terminate(_req, _state), do: :ok
+
+  defp run(req, opts) do
+    opts[:stack].run(Cage.HTTP.Cowboy.new(req))
+  end
 end
 
 defmodule Cage.HTTP.Cowboy.Implementation do
@@ -116,6 +170,8 @@ defmodule Cage.HTTP.Cowboy.Implementation do
         result = R.chunk(data, req)
         {result, t}
       end
+
+      def handles_websocket?(_), do: true
     end
   end
 end
