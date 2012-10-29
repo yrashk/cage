@@ -1,11 +1,13 @@
 defmodule Cage.WebSocket do
+  @type response :: {:text, String.t} | binary
+  @type message :: binary
   defmodule Behaviour do
       use Behaviour
-      defcallback init(conn)
-      defcallback handle_text(message, state)
-      defcallback handle_binary(message, state)
-      defcallback handle_info(info, state)
-      defcallback terminate(reason, state)
+      defcallback init(Cage.connection), do: {:ok, any} | {:shutdown, any}
+      defcallback handle_text(Cage.WebSocket.message, any), do: {:ok, any} | {:reply, Cage.WebSocket.response, any}
+      defcallback handle_binary(Cage.WebSocket.message, any), do: {:ok, any} | {:reply, Cage.WebSocket.response, any}
+      defcallback handle_info(any, any), do: {:ok, any} | {:reply, Cage.WebSocket.response, any}
+      defcallback terminate(any, any), do: any
   end
   def __using__(_) do
     quote do
