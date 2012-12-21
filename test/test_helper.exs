@@ -1,2 +1,2 @@
-Cage.start
+#Cage.start
 ExUnit.start
